@@ -1,0 +1,568 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>StudyHub – Course Materials</title>
+<style>
+  :root {
+    --bg: #f6f7fb; --surface: #ffffff; --text: #1c2233; --muted: #667089;
+    --border: #e1e5ef; --accent: #3b5bdb; --accent-text: #ffffff; --accent-soft: #e8edff;
+    --danger: #d6336c; --shadow: 0 6px 24px rgba(20,30,70,.10);
+    box-sizing: border-box;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --bg: #12151f; --surface: #1b2030; --text: #e8ebf5; --muted: #98a2bd;
+      --border: #2b3248; --accent: #7c97ff; --accent-text: #0e1220; --accent-soft: #252c4a;
+      --danger: #ff6b9a; --shadow: 0 6px 24px rgba(0,0,0,.45);
+    }
+  }
+  :root[data-theme="dark"] {
+    --bg: #12151f; --surface: #1b2030; --text: #e8ebf5; --muted: #98a2bd;
+    --border: #2b3248; --accent: #7c97ff; --accent-text: #0e1220; --accent-soft: #252c4a;
+    --danger: #ff6b9a; --shadow: 0 6px 24px rgba(0,0,0,.45);
+  }
+  html { scroll-padding-top: env(safe-area-inset-top, 0px); }
+  *, *::before, *::after { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--bg); color: var(--text);
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    line-height: 1.5; min-height: 100vh;
+  }
+  button, input, textarea { font: inherit; color: inherit; }
+
+  /* Navbar */
+  header.nav {
+    position: sticky; top: env(safe-area-inset-top, 0px); z-index: 20;
+    background: var(--surface); border-bottom: 1px solid var(--border);
+  }
+  .nav-inner {
+    max-width: 1000px; margin: 0 auto; padding: 0 16px; height: 58px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .brand { font-weight: 700; font-size: 1.15rem; text-decoration: none; color: var(--text); margin-right: 12px; white-space: nowrap; }
+  .brand span { color: var(--accent); }
+  .nav-link, .nav-btn {
+    background: none; border: 0; padding: 8px 12px; border-radius: 8px; cursor: pointer;
+    text-decoration: none; color: var(--text); font-weight: 500; display: inline-flex; align-items: center; gap: 6px;
+  }
+  .nav-link:hover, .nav-btn:hover, .nav-btn[aria-expanded="true"] { background: var(--accent-soft); }
+  .spacer { flex: 1; }
+  .dropdown { position: relative; }
+  .menu {
+    position: absolute; top: calc(100% + 6px); left: 0; min-width: 270px; max-width: 86vw;
+    max-height: 70vh; overflow-y: auto; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; box-shadow: var(--shadow); padding: 6px; display: none;
+  }
+  .menu.open { display: block; }
+  .menu a {
+    display: block; padding: 9px 12px; border-radius: 8px; text-decoration: none; color: var(--text);
+  }
+  .menu a:hover, .menu a.active { background: var(--accent-soft); }
+  .menu a small { display: block; color: var(--muted); font-size: .78rem; }
+  .menu .empty { padding: 12px; color: var(--muted); font-size: .9rem; }
+  .menu hr { border: 0; border-top: 1px solid var(--border); margin: 6px 0; }
+  .menu .add { color: var(--accent); font-weight: 600; }
+  .badge { font-size: .72rem; background: var(--accent-soft); color: var(--accent); padding: 1px 8px; border-radius: 999px; font-weight: 600; }
+
+  /* Layout */
+  main { max-width: 1000px; margin: 0 auto; padding: 28px 16px 64px; }
+  h1 { margin: 0 0 4px; font-size: 1.7rem; }
+  h2 { margin: 0 0 12px; font-size: 1.2rem; }
+  .sub { color: var(--muted); margin: 0 0 22px; }
+  .row { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
+  .row.between { justify-content: space-between; }
+  .btn {
+    background: var(--accent); color: var(--accent-text); border: 0; border-radius: 10px;
+    padding: 9px 16px; font-weight: 600; cursor: pointer;
+  }
+  .btn:hover { filter: brightness(1.08); }
+  .btn:disabled { opacity: .55; cursor: default; }
+  .btn.ghost { background: transparent; color: var(--text); border: 1px solid var(--border); }
+  .btn.danger { background: transparent; color: var(--danger); border: 1px solid var(--border); }
+  .btn.small { padding: 5px 10px; font-size: .85rem; border-radius: 8px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 14px; }
+  .card {
+    background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 16px;
+    text-decoration: none; color: inherit; display: block;
+  }
+  a.card:hover { border-color: var(--accent); box-shadow: var(--shadow); }
+  .code { font-size: .78rem; font-weight: 700; color: var(--accent); letter-spacing: .04em; text-transform: uppercase; }
+  .card h3 { margin: 4px 0 6px; font-size: 1.05rem; }
+  .card p { margin: 0; color: var(--muted); font-size: .92rem; }
+  .meta { margin-top: 10px; font-size: .8rem; color: var(--muted); }
+
+  .crumbs { font-size: .88rem; margin-bottom: 14px; color: var(--muted); }
+  .crumbs a { color: var(--accent); text-decoration: none; }
+
+  .mat {
+    display: flex; gap: 14px; align-items: flex-start; background: var(--surface);
+    border: 1px solid var(--border); border-radius: 12px; padding: 14px; margin-bottom: 10px;
+  }
+  .mat .ico { font-size: 1.6rem; line-height: 1; padding-top: 2px; }
+  .mat .body { flex: 1; min-width: 0; }
+  .mat h3 { margin: 0; font-size: 1rem; overflow-wrap: anywhere; }
+  .mat p { margin: 3px 0 0; color: var(--muted); font-size: .9rem; overflow-wrap: anywhere; }
+  .mat .meta { margin-top: 6px; }
+  .mat .actions { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+
+  .notice {
+    background: var(--surface); border: 1px dashed var(--border); border-radius: 14px;
+    padding: 28px; text-align: center; color: var(--muted);
+  }
+  .notice strong { color: var(--text); display: block; margin-bottom: 6px; }
+
+  /* Dialogs & forms */
+  dialog {
+    border: 1px solid var(--border); border-radius: 16px; background: var(--surface); color: var(--text);
+    padding: 22px; width: min(480px, calc(100vw - 28px)); box-shadow: var(--shadow);
+  }
+  dialog::backdrop { background: rgba(10,14,28,.5); }
+  dialog h2 { margin-top: 0; }
+  label { display: block; font-weight: 600; font-size: .88rem; margin: 12px 0 5px; }
+  input[type=text], input[type=url], textarea {
+    width: 100%; padding: 9px 11px; border: 1px solid var(--border); border-radius: 9px;
+    background: var(--bg);
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+  textarea { resize: vertical; min-height: 70px; }
+  input[type=file] { width: 100%; }
+  .seg { display: flex; gap: 8px; margin-top: 4px; }
+  .seg label { margin: 0; font-weight: 500; display: flex; align-items: center; gap: 6px; cursor: pointer; }
+  .hint { font-size: .8rem; color: var(--muted); margin-top: 5px; }
+  .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 20px; }
+  .err { color: var(--danger); font-size: .88rem; margin-top: 10px; min-height: 1em; }
+
+  #toast {
+    position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%);
+    background: var(--text); color: var(--bg); padding: 10px 16px; border-radius: 10px;
+    font-size: .9rem; opacity: 0; pointer-events: none; transition: opacity .2s; z-index: 50; max-width: 90vw;
+  }
+  #toast.show { opacity: 1; }
+  .faculty-pill { font-size: .75rem; background: var(--accent-soft); color: var(--accent); padding: 3px 10px; border-radius: 999px; font-weight: 600; white-space: nowrap; }
+  @media (max-width: 560px) {
+    .brand { margin-right: 0; }
+    .faculty-pill { display: none; }
+    .mat { flex-direction: column; }
+  }
+</style>
+</head>
+<body>
+
+<header class="nav">
+  <div class="nav-inner" id="nav"></div>
+</header>
+
+<main id="main"></main>
+
+<!-- Add course -->
+<dialog id="courseDlg">
+  <h2>Create a course</h2>
+  <label for="cCode">Course code</label>
+  <input type="text" id="cCode" maxlength="20" placeholder="e.g. CS101">
+  <label for="cName">Course name *</label>
+  <input type="text" id="cName" maxlength="100" placeholder="e.g. Introduction to Programming">
+  <label for="cDesc">Description</label>
+  <textarea id="cDesc" maxlength="500" placeholder="What is this course about?"></textarea>
+  <div class="err" id="cErr"></div>
+  <div class="dlg-actions">
+    <button class="btn ghost" id="cCancel" type="button">Cancel</button>
+    <button class="btn" id="cSave" type="button">Create course</button>
+  </div>
+</dialog>
+
+<!-- Add material -->
+<dialog id="matDlg">
+  <h2>Add study material</h2>
+  <label for="mTitle">Title *</label>
+  <input type="text" id="mTitle" maxlength="120" placeholder="e.g. Unit 1 – Lecture notes">
+  <label for="mDesc">Description</label>
+  <textarea id="mDesc" maxlength="400" placeholder="Optional short note for students"></textarea>
+  <label>Type</label>
+  <div class="seg">
+    <label><input type="radio" name="mKind" value="file" checked> Upload a file</label>
+    <label><input type="radio" name="mKind" value="link"> Add a link</label>
+  </div>
+  <div id="fileBox">
+    <label for="mFile">File *</label>
+    <input type="file" id="mFile" accept=".pdf,.txt,.md,.csv,.json,image/*,video/*">
+    <div class="hint">PDF, images, video, text/CSV/Markdown/JSON · max 20 MB. For Word/PowerPoint/other formats, upload as PDF or use “Add a link”.</div>
+  </div>
+  <div id="linkBox" hidden>
+    <label for="mLink">Link (https://…) *</label>
+    <input type="url" id="mLink" placeholder="https://drive.google.com/…  or  https://youtube.com/…">
+  </div>
+  <div class="err" id="mErr"></div>
+  <div class="dlg-actions">
+    <button class="btn ghost" id="mCancel" type="button">Cancel</button>
+    <button class="btn" id="mSave" type="button">Add material</button>
+  </div>
+</dialog>
+
+<!-- Confirm -->
+<dialog id="confirmDlg">
+  <h2 id="confirmTitle">Are you sure?</h2>
+  <p id="confirmMsg" style="color:var(--muted);margin:0"></p>
+  <div class="dlg-actions">
+    <button class="btn ghost" id="confirmNo" type="button">Cancel</button>
+    <button class="btn danger" id="confirmYes" type="button">Delete</button>
+  </div>
+</dialog>
+
+<div id="toast" role="status"></div>
+
+<script>
+(function () {
+  "use strict";
+
+  // ---------- State ----------
+  var db = null, assets = null, userCap = null;
+  var canEdit = false, myName = "";
+  var courses = [], materials = [];
+  var loaded = { courses: false, materials: false };
+  var loadError = "";
+  var menuOpen = false;
+
+  var $ = function (id) { return document.getElementById(id); };
+
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function safeUrl(u) {
+    try { var p = new URL(u); return (p.protocol === "https:" || p.protocol === "http:") ? p.href : ""; }
+    catch (e) { return ""; }
+  }
+  function fmtSize(b) {
+    if (!b && b !== 0) return "";
+    if (b < 1024) return b + " B";
+    if (b < 1048576) return (b / 1024).toFixed(0) + " KB";
+    return (b / 1048576).toFixed(1) + " MB";
+  }
+  function fmtDate(ms) {
+    if (!ms) return "";
+    try { return new Date(ms).toLocaleDateString(undefined, { year: "numeric", month: "short", day: "numeric" }); }
+    catch (e) { return ""; }
+  }
+  function iconFor(m) {
+    if (m.kind === "link") return "🔗";
+    var t = m.contentType || "";
+    if (t.indexOf("pdf") > -1) return "📕";
+    if (t.indexOf("image") === 0) return "🖼️";
+    if (t.indexOf("video") === 0) return "🎬";
+    if (t.indexOf("csv") > -1) return "📊";
+    return "📄";
+  }
+  var toastTimer;
+  function toast(msg) {
+    var t = $("toast"); t.textContent = msg; t.classList.add("show");
+    clearTimeout(toastTimer); toastTimer = setTimeout(function () { t.classList.remove("show"); }, 3200);
+  }
+
+  // ---------- Routing ----------
+  function route() {
+    var h = location.hash || "#/";
+    var m = h.match(/^#\/course\/([^/]+)/);
+    return m ? { name: "course", id: decodeURIComponent(m[1]) } : { name: "home" };
+  }
+  window.addEventListener("hashchange", function () { menuOpen = false; render(); window.scrollTo(0, 0); });
+
+  function courseMaterials(id) {
+    return materials.filter(function (m) { return m.courseId === id; })
+      .sort(function (a, b) { return (a.createdAt || 0) - (b.createdAt || 0); });
+  }
+
+  // ---------- Render ----------
+  function render() { renderNav(); renderMain(); }
+
+  function renderNav() {
+    var r = route();
+    var items = courses.map(function (c) {
+      var n = courseMaterials(c.id).length;
+      return '<a href="#/course/' + encodeURIComponent(c.id) + '"' + (r.id === c.id ? ' class="active"' : '') + '>' +
+        esc(c.name) + '<small>' + (c.code ? esc(c.code) + ' · ' : '') + n + ' material' + (n === 1 ? '' : 's') + '</small></a>';
+    }).join("");
+    if (!items) items = '<div class="empty">No courses yet.</div>';
+    if (canEdit) items += '<hr><a href="#" class="add" data-act="new-course">＋ Create new course</a>';
+
+    $("nav").innerHTML =
+      '<a class="brand" href="#/">Study<span>Hub</span></a>' +
+      '<a class="nav-link" href="#/">Home</a>' +
+      '<div class="dropdown">' +
+        '<button class="nav-btn" id="coursesBtn" aria-haspopup="true" aria-expanded="' + menuOpen + '">Courses <span class="badge">' + courses.length + '</span> ▾</button>' +
+        '<div class="menu' + (menuOpen ? ' open' : '') + '" id="coursesMenu">' + items + '</div>' +
+      '</div>' +
+      '<div class="spacer"></div>' +
+      (canEdit ? '<span class="faculty-pill">Faculty mode</span>' : '');
+  }
+
+  function renderMain() {
+    var el = $("main"), r = route();
+
+    if (loadError) {
+      el.innerHTML = '<div class="notice"><strong>Can’t load course data</strong>' + esc(loadError) + '</div>';
+      return;
+    }
+    if (!db) {
+      el.innerHTML = '<div class="notice"><strong>Connecting…</strong>If this stays here, open the page from its claude.ai link while signed in.</div>';
+      return;
+    }
+    if (!loaded.courses || !loaded.materials) {
+      el.innerHTML = '<div class="notice">Loading…</div>';
+      return;
+    }
+
+    if (r.name === "course") {
+      var c = courses.filter(function (x) { return x.id === r.id; })[0];
+      if (!c) {
+        el.innerHTML = '<div class="crumbs"><a href="#/">← All courses</a></div><div class="notice"><strong>Course not found</strong>It may have been removed.</div>';
+        return;
+      }
+      var ms = courseMaterials(c.id);
+      var html =
+        '<div class="crumbs"><a href="#/">Courses</a> / ' + esc(c.name) + '</div>' +
+        '<div class="row between"><div>' +
+          (c.code ? '<div class="code">' + esc(c.code) + '</div>' : '') +
+          '<h1>' + esc(c.name) + '</h1>' +
+          (c.description ? '<p class="sub">' + esc(c.description) + '</p>' : '<p class="sub"></p>') +
+        '</div>' +
+        (canEdit ? '<div class="row"><button class="btn" data-act="new-material">＋ Add material</button>' +
+          '<button class="btn danger" data-act="del-course" data-id="' + esc(c.id) + '">Delete course</button></div>' : '') +
+        '</div>' +
+        '<h2>Study materials (' + ms.length + ')</h2>';
+      if (!ms.length) {
+        html += '<div class="notice"><strong>No materials yet</strong>' +
+          (canEdit ? 'Use “Add material” to upload the first file for this course.' : 'Check back soon — your faculty hasn’t added anything here yet.') + '</div>';
+      } else {
+        html += ms.map(function (m) {
+          var href = m.kind === "link" ? safeUrl(m.url) : (m.assetId ? "/_blob/" + encodeURIComponent(m.assetId) : "");
+          var meta = [];
+          if (m.kind === "file") { if (m.fileName) meta.push(esc(m.fileName)); if (m.size) meta.push(fmtSize(m.size)); }
+          else meta.push("External link");
+          if (m.createdAt) meta.push("Added " + fmtDate(m.createdAt));
+          return '<div class="mat"><div class="ico">' + iconFor(m) + '</div><div class="body">' +
+            '<h3>' + esc(m.title) + '</h3>' +
+            (m.description ? '<p>' + esc(m.description) + '</p>' : '') +
+            '<div class="meta">' + meta.join(' · ') + '</div></div>' +
+            '<div class="actions">' +
+              (href ? '<a class="btn small" href="' + esc(href) + '" target="_blank" rel="noopener noreferrer">' + (m.kind === "link" ? 'Open link' : 'View / Download') + '</a>' : '') +
+              (canEdit ? '<button class="btn danger small" data-act="del-material" data-id="' + esc(m.id) + '">Delete</button>' : '') +
+            '</div></div>';
+        }).join("");
+      }
+      el.innerHTML = html;
+      return;
+    }
+
+    // Home
+    var home = '<div class="row between"><div><h1>Courses</h1><p class="sub">Pick a course to browse its study materials.</p></div>' +
+      (canEdit ? '<button class="btn" data-act="new-course">＋ Create course</button>' : '') + '</div>';
+    if (!courses.length) {
+      home += '<div class="notice"><strong>No courses yet</strong>' +
+        (canEdit ? 'Create your first course, then add study materials to it.' : 'Courses will appear here once faculty add them.') + '</div>';
+    } else {
+      home += '<div class="grid">' + courses.map(function (c) {
+        var n = courseMaterials(c.id).length;
+        return '<a class="card" href="#/course/' + encodeURIComponent(c.id) + '">' +
+          (c.code ? '<div class="code">' + esc(c.code) + '</div>' : '') +
+          '<h3>' + esc(c.name) + '</h3>' +
+          '<p>' + esc(c.description || 'No description') + '</p>' +
+          '<div class="meta">' + n + ' material' + (n === 1 ? '' : 's') + '</div></a>';
+      }).join("") + '</div>';
+    }
+    el.innerHTML = home;
+  }
+
+  // ---------- Events (delegated) ----------
+  document.addEventListener("click", function (e) {
+    var btn = e.target.closest("#coursesBtn");
+    if (btn) { menuOpen = !menuOpen; renderNav(); return; }
+    if (menuOpen && !e.target.closest("#coursesMenu")) { menuOpen = false; renderNav(); }
+    if (e.target.closest("#coursesMenu a[href^='#/course']")) { menuOpen = false; }
+
+    var t = e.target.closest("[data-act]");
+    if (!t) return;
+    var act = t.getAttribute("data-act");
+    if (act === "new-course") { e.preventDefault(); menuOpen = false; renderNav(); openCourseDlg(); }
+    else if (act === "new-material") openMatDlg();
+    else if (act === "del-course") deleteCourse(t.getAttribute("data-id"));
+    else if (act === "del-material") deleteMaterial(t.getAttribute("data-id"));
+  });
+  document.addEventListener("keydown", function (e) {
+    if (e.key === "Escape" && menuOpen) { menuOpen = false; renderNav(); }
+  });
+
+  // ---------- Confirm dialog ----------
+  function confirmBox(title, msg, yesLabel) {
+    return new Promise(function (resolve) {
+      var d = $("confirmDlg");
+      $("confirmTitle").textContent = title;
+      $("confirmMsg").textContent = msg;
+      $("confirmYes").textContent = yesLabel || "Delete";
+      function done(v) {
+        $("confirmYes").onclick = null; $("confirmNo").onclick = null; d.onclose = null;
+        if (d.open) d.close(); resolve(v);
+      }
+      $("confirmYes").onclick = function () { done(true); };
+      $("confirmNo").onclick = function () { done(false); };
+      d.onclose = function () { done(false); };
+      d.showModal();
+    });
+  }
+
+  // ---------- Course dialog ----------
+  function openCourseDlg() {
+    if (!canEdit) return;
+    $("cCode").value = ""; $("cName").value = ""; $("cDesc").value = ""; $("cErr").textContent = "";
+    $("cSave").disabled = false; $("cSave").textContent = "Create course";
+    $("courseDlg").showModal(); $("cName").focus();
+  }
+  $("cCancel").onclick = function () { $("courseDlg").close(); };
+  $("cSave").onclick = async function () {
+    var name = $("cName").value.trim();
+    if (!name) { $("cErr").textContent = "Please enter a course name."; return; }
+    $("cSave").disabled = true; $("cSave").textContent = "Saving…";
+    try {
+      var ref = await db.collection("courses").add({
+        code: $("cCode").value.trim(), name: name, description: $("cDesc").value.trim(),
+        createdBy: myName || "", createdAt: Date.now()
+      });
+      $("courseDlg").close();
+      toast("Course created");
+      location.hash = "#/course/" + encodeURIComponent(ref.id);
+    } catch (err) {
+      $("cErr").textContent = "Couldn’t save the course" + (err && err.code ? " (" + err.code + ")" : "") + ".";
+      $("cSave").disabled = false; $("cSave").textContent = "Create course";
+    }
+  };
+
+  // ---------- Material dialog ----------
+  function kind() { return document.querySelector('input[name="mKind"]:checked').value; }
+  function syncKind() {
+    var k = kind();
+    $("fileBox").hidden = k !== "file"; $("linkBox").hidden = k !== "link";
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('input[name="mKind"]'), function (r) { r.addEventListener("change", syncKind); });
+
+  function openMatDlg() {
+    if (!canEdit) return;
+    $("mTitle").value = ""; $("mDesc").value = ""; $("mFile").value = ""; $("mLink").value = ""; $("mErr").textContent = "";
+    document.querySelector('input[name="mKind"][value="file"]').checked = true;
+    if (!assets) {
+      document.querySelector('input[name="mKind"][value="link"]').checked = true;
+    }
+    syncKind();
+    $("mSave").disabled = false; $("mSave").textContent = "Add material";
+    $("matDlg").showModal(); $("mTitle").focus();
+  }
+  $("mCancel").onclick = function () { $("matDlg").close(); };
+
+  var UPLOAD_ERRORS = {
+    too_large: "That file is too large (max 20 MB).",
+    unsupported_type: "That file type isn’t supported. Use PDF, images, video, text/CSV, or add a link instead.",
+    quota_or_state: "Storage is full for this site.",
+    rate_limited: "Too many uploads — please wait a moment and try again."
+  };
+
+  $("mSave").onclick = async function () {
+    var r = route(); if (r.name !== "course") return;
+    var title = $("mTitle").value.trim(), k = kind();
+    var err = $("mErr"); err.textContent = "";
+    if (!title) { err.textContent = "Please enter a title."; return; }
+
+    var data = { courseId: r.id, title: title, description: $("mDesc").value.trim(), kind: k, createdAt: Date.now() };
+    var uploadedId = null;
+    $("mSave").disabled = true;
+
+    try {
+      if (k === "link") {
+        var u = safeUrl($("mLink").value.trim());
+        if (!u) { err.textContent = "Please enter a valid http(s) link."; $("mSave").disabled = false; return; }
+        data.url = u;
+      } else {
+        var f = $("mFile").files[0];
+        if (!f) { err.textContent = "Please choose a file."; $("mSave").disabled = false; return; }
+        if (f.size > 20 * 1024 * 1024) { err.textContent = UPLOAD_ERRORS.too_large; $("mSave").disabled = false; return; }
+        if (!assets) { err.textContent = "File uploads aren’t available here — use a link instead."; $("mSave").disabled = false; return; }
+        $("mSave").textContent = "Uploading…";
+        var res = await assets.upload(f);
+        uploadedId = res.id;
+        data.assetId = res.id; data.fileName = f.name; data.size = res.sizeBytes || f.size; data.contentType = res.contentType || f.type || "";
+      }
+      $("mSave").textContent = "Saving…";
+      await db.collection("materials").add(data);
+      $("matDlg").close();
+      toast("Material added");
+    } catch (e2) {
+      if (uploadedId && assets) { try { await assets.delete(uploadedId); } catch (e3) {} }
+      err.textContent = (e2 && UPLOAD_ERRORS[e2.code]) || ("Couldn’t add the material" + (e2 && e2.message ? ": " + e2.message : "."));
+      $("mSave").disabled = false; $("mSave").textContent = "Add material";
+    }
+  };
+
+  // ---------- Deletes ----------
+  async function removeMaterialDoc(m) {
+    if (m.assetId && assets) { try { await assets.delete(m.assetId); } catch (e) {} }
+    await db.collection("materials").doc(m.id).delete();
+  }
+  async function deleteMaterial(id) {
+    var m = materials.filter(function (x) { return x.id === id; })[0]; if (!m || !canEdit) return;
+    if (!(await confirmBox("Delete material?", "“" + m.title + "” will be removed for everyone."))) return;
+    try { await removeMaterialDoc(m); toast("Material deleted"); }
+    catch (e) { toast("Couldn’t delete the material."); }
+  }
+  async function deleteCourse(id) {
+    var c = courses.filter(function (x) { return x.id === id; })[0]; if (!c || !canEdit) return;
+    var ms = courseMaterials(id);
+    if (!(await confirmBox("Delete course?", "“" + c.name + "” and its " + ms.length + " material" + (ms.length === 1 ? "" : "s") + " will be permanently removed."))) return;
+    try {
+      for (var i = 0; i < ms.length; i++) await removeMaterialDoc(ms[i]);
+      await db.collection("courses").doc(id).delete();
+      toast("Course deleted");
+      location.hash = "#/";
+    } catch (e) { toast("Couldn’t delete the whole course. Please try again."); }
+  }
+
+  // ---------- Init ----------
+  function snapToList(snap) {
+    return snap.docs.map(function (d) { var x = d.data() || {}; x.id = d.id; return x; });
+  }
+  async function init() {
+    render();
+    if (!window.claude || typeof window.claude.use !== "function") { return; }
+    try {
+      db = await window.claude.use("db");
+      assets = await window.claude.use("assets");
+      userCap = await window.claude.use("user");
+    } catch (e) { db = null; }
+    if (!db) { render(); return; }
+
+    try {
+      if (userCap) {
+        canEdit = !!(await userCap.canEdit());
+        try { var me = await userCap.me(); myName = (me && me.name) || ""; } catch (e) {}
+      }
+    } catch (e) { canEdit = false; }
+
+    function fail(e) { loadError = "Please reload the page" + (e && e.code ? " (" + e.code + ")" : "") + "."; render(); }
+
+    db.collection("courses").onSnapshot(function (snap) {
+      courses = snapToList(snap).sort(function (a, b) {
+        return String(a.name || "").toLowerCase().localeCompare(String(b.name || "").toLowerCase());
+      });
+      loaded.courses = true; render();
+    }, fail);
+    db.collection("materials").onSnapshot(function (snap) {
+      materials = snapToList(snap); loaded.materials = true; render();
+    }, fail);
+  }
+  init();
+})();
+</script>
+</body>
+</html>
